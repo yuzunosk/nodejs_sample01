@@ -15,8 +15,20 @@
 
     <div role="main" class="text-center">
         <p class="my-10"><%= content %></p>
-        <form action="/other" class="my-10" method="POST">
-            <input type="text" name="msg" class="border-opacity-10 shadow py-2 bg-white-200">
+        <table class="table">
+            <tr>
+                <th>伝言です！</th>
+            </tr>
+            <tr>
+                <td><%= data.msg %></td>
+            </tr>
+        </table>
+        <p>your last message:<%= cookie_data %></p>
+        <form action="/" class="my-10" method="POST">
+            <div class="form-group">
+                <label for="msg" >MESSAGE</label>
+                <input type="text" name="msg" id="msg" class="border-opacity-10 shadow py-2 bg-white-200 py-2">
+            </div>
             <input type="submit" value="送信" class="bg-indigo-700 font-semibold text-white py-2 px-4 rounded hover:bg-red-500 border-opacity-10 shadow">
         </form>
     </div>
@@ -24,11 +36,12 @@
 
     <div class="text-center">
         <table class="table">
+            <% var id = 0; %>
             <% for (var key in data) { %>
-            <tr>
-                <th><%= key %></th>
-                <td><%= data[key] %></td>
-            </tr>
+            <%- include("data_item" ,{
+                id: ++id,
+                key: key,
+                val: [data[key]]}) %>
             <% } %>
         </table>
     </div>

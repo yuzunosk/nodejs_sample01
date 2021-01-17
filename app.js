@@ -10,6 +10,15 @@ var data = {
     "Sora": "09-333-333",
 };
 
+var data2 = {
+    "Taro": ["taro@yamada" , "09-000-000" , "TOKYO"],
+    "Toki": ["toki@yokohama" , "09-111-111" , "YOKOHAMA"],
+    "Aoki": ["aoki@kouchi" , "09-222-222" , "KOCHI"],
+    "Sora": ["sora@sora" , "09-333-333" , "Sora"],
+};
+
+var data3 = { msg: "no  message..." };
+
 
 const index_page = fs.readFileSync("./public_html/hello.ejs", "UTF-8");
 const other_page = fs.readFileSync("./public_html/other.ejs", "UTF-8");
@@ -52,18 +61,66 @@ function getFormClient(req, res) {
 
 //res_index
 function res_index(req, res) {
-    var msg = "Indexページ";
 
+    //POSTアクセス時の処理
+    if (req.method == "POST") {
+        var body = "";
+
+        //データ受信時の処理
+        req.on("data", (data) => {
+            body += data;
+        });
+
+        //データ受信終了時の処理
+        req.on("end", () => {
+            data = qs.parse(body); //データのパース
+            // クッキーの保存
+            setCookie("msg", data.msg, res);
+            write_index(req, res);
+        });
+    } else {
+        write_index(req, res);
+    }
+}
+
+// indexの表示の作成
+function write_index(req, res) {
+    var msg = "伝言を表示します";
+    var cookie_data = getCookie("msg", req);
     var content = ejs.render(index_page, {
-    title: " Indexページ",
+        title: " Indexページ",
         content: msg,
         data: data,
-});
+        filename: "./public_html/data_item",
+        cookie_data: cookie_data,
+    });
         res.writeHead("200", { 'Content-Type': "text/html" });
         res.write(content);
         res.end();
 }
+
+//クッキーの値を設定
+function setCookie(key, value, response) {
+    var cookie = escape(value);
+    response.setHeader("Set-Cookie", [key + "=" + cookie]);
+}
   
+//クッキーの値を朱徳
+function getCookie(key, request) {
+    var cookie_data = request.headers.cookie != undefined ? request.headers.cookie : "";
+    console.log(cookie_data);
+    var data = cookie_data.split(";");
+    console.log(data);
+
+    for (var i in data) {
+    if (data[i].trim().startsWith(key + "=")) {
+        var result = data[i].trim().substring(key.length + 1);
+        return unescape(result);
+    }
+  }
+return '';
+}
+
 
 //otherの処理
 
@@ -87,6 +144,8 @@ function res_other(req, res) {
             var content = ejs.render(other_page, {
                 title: " Otherページ",
                 content: msg,
+                data: data2,
+                filename: "./public_html/data_item.ejs",
             });
             res.writeHead("200", { 'Content-Type': "text/html" });
             res.write(content);
